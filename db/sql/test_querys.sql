@@ -76,3 +76,6 @@ AND d.name = "Beginner"
 ORDER BY RAND()
 LIMIT 1;
 
+-- Grant permissions to user (using root user)
+GRANT SELECT, UPDATE ON rtapi_db.* TO 'user'@'%';
+FLUSH PRIVILEGES;
