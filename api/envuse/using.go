@@ -1,9 +1,10 @@
 package envuse
 
 import (
-	"os"
-	"fmt"
 	"bufio"
+	"fmt"
+	"os"
+	"slices"
 )
 
 type OpenFileError struct {
@@ -19,14 +20,7 @@ type ReadFileError struct {
 	Err error
 }
 func (e ReadFileError) Error() string {
-	return fmt.Sprintf("failed to read line from env file %s: %v", e.File, e.Err)
-}
-
-type EnvKeyError struct {
-	Key string
-}
-func (e EnvKeyError) Error() string {
-	return fmt.Sprintf("env key %s does not exist", e.Key)
+	return fmt.Sprintf("failed to read from env file %s: %v", e.File, e.Err)
 }
 
 var envMap map[string]string = map[string]string{}
@@ -36,18 +30,20 @@ func LoadEnvFile(fileName string) error {
 	if errFile != nil { return OpenFileError{ File: fileName, Err: errFile } }
 	defer file.Close()
 	fileScanner := bufio.NewScanner(file)
-	var fileContent []string
+	fileScanner.Split(bufio.ScanLines)  // Already done by default
 	for fileScanner.Scan() {
-		fileContent = append(fileContent, fileScanner.Text()) 
+		fileLine := []rune(fileScanner.Text())
+		signIndex := slices.Index(fileLine, '=')
+		if signIndex < 0 { continue }
+		key := string(fileLine[:signIndex])
+		if key == "" { continue }
+		if (signIndex + 1) >= len(fileLine) { envMap[key] = "" }
+		value := string(fileLine[(signIndex + 1):])
+		envMap[key] = value
 	}
 	fileScannerErr := fileScanner.Err()
 	if fileScannerErr != nil { return ReadFileError{ File: fileName, Err: fileScannerErr } }
-	fmt.Printf("Env file content: %v", fileContent)
 	return nil
 }
 
-func GetEnv(envKey string) (string, error) {
-	value, ok := envMap[envKey]
-	if !ok { return "", EnvKeyError{ Key: envKey } }
-	return value, nil
-}
+func GetEnv(envKey string) string { return envMap[envKey] }
