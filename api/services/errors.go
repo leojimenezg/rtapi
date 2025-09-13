@@ -17,7 +17,7 @@ type RowsIterationError struct {
 	Err error
 }
 func (e RowsIterationError) Error() string {
-	return fmt.Sprintf("failed to iterate on all query rows:\n%v", e.Err)
+	return fmt.Sprintf("failed to iterate on all rows from %s query:\n%v", e.Query, e.Err)
 }
 
 type FillColumnsError struct {
@@ -25,4 +25,12 @@ type FillColumnsError struct {
 }
 func (e FillColumnsError) Error() string {
 	return fmt.Sprintf("failed to fill Category struct with row columns:\n%v", e.Err)
+}
+
+type UpdateRegisterError struct {
+	Query string
+	Err error
+}
+func (e UpdateRegisterError) Error() string {
+	return fmt.Sprintf("failed to update register using %s query:\n%v", e.Query, e.Err)
 }

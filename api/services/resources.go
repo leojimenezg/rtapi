@@ -18,7 +18,9 @@ func GetAllResources(db *sql.DB) ([]database.Resource, error) {
 		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr } }
 		resources = append(resources, resource)
 	}
-	if err := rows.Err(); err != nil { return nil, RowsIterationError{ Query: "ALL_RESOURCES", Err: err } }
+	if err := rows.Err(); err != nil {
+		return nil, RowsIterationError{ Query: "ALL_RESOURCES", Err: err }
+	}
 	return resources, nil
 }
 
@@ -30,4 +32,55 @@ func GetResourceById(db *sql.DB, id int64) (database.Resource, error) {
 		&resource.IsValid, &resource.CreatedAt, &resource.UpdatedAt)
 	if rowErr != nil { return database.Resource{}, FillColumnsError{ Err: rowErr } }
 	return resource, nil
+}
+
+func GetAllResourcesWithDetails(db *sql.DB) ([]database.ResourceWithDetails, error) {
+	rows, rowsErr := db.Query(database.ALL_RESOURCES_WITH_DETAILS)
+	if rowsErr != nil {
+		return nil, BadQueryError{ Query: "ALL_RESOURCES_WITH_DETAILS", Err: rowsErr }
+	}
+	defer rows.Close()
+	var resourcesWithDetails []database.ResourceWithDetails
+	for rows.Next() {
+		var resourceWithDetails database.ResourceWithDetails
+		rowErr := rows.Scan(
+			&resourceWithDetails.ResourceID, &resourceWithDetails.ResourceLink,
+			&resourceWithDetails.TypeName, &resourceWithDetails.TopicName)
+		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr } }
+		resourcesWithDetails = append(resourcesWithDetails, resourceWithDetails)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, RowsIterationError{ Query: "ALL_RESOURCES_WITH_DETAILS", Err: err }
+	}
+	return resourcesWithDetails, nil
+}
+
+func GetResourceWithDetailsById(db *sql.DB, id int64) (database.ResourceWithDetails, error) {
+	row := db.QueryRow(database.RESOURCE_WITH_DETAILS_BY_ID, id)
+	var resourceWithDetails database.ResourceWithDetails
+	rowErr := row.Scan(
+		&resourceWithDetails.ResourceID, &resourceWithDetails.ResourceLink,
+		&resourceWithDetails.TypeName, &resourceWithDetails.TopicName)
+	if rowErr != nil { return database.ResourceWithDetails{}, FillColumnsError{ Err: rowErr } }
+	return resourceWithDetails, nil
+}
+
+func GetResourcesWithDetailsByTopic(
+	db *sql.DB, topicID int64) ([]database.ResourceWithDetails, error) {
+	rows, rowsErr := db.Query(database.RESOURCES_BY_TOPIC, topicID)
+	if rowsErr != nil { return nil, BadQueryError{ Query: "RESOURCES_BY_TOPIC", Err: rowsErr } }
+	defer rows.Close()
+	var resourcesByTopic []database.ResourceWithDetails
+	for rows.Next() {
+		var resourceByTopic database.ResourceWithDetails
+		rowErr := rows.Scan(
+			&resourceByTopic.ResourceID, &resourceByTopic.ResourceLink,
+			&resourceByTopic.TypeName, &resourceByTopic.TopicName)
+		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr } }
+		resourcesByTopic = append(resourcesByTopic, resourceByTopic)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, RowsIterationError{ Query: "RESOURCES_BY_TOPIC", Err: err }
+	}
+	return resourcesByTopic, nil
 }
