@@ -30,7 +30,13 @@ func GetDifficultyById(db *sql.DB, id int64) (database.Difficulty, error) {
 	rowErr := row.Scan(
 		&difficulty.ID, &difficulty.Name, &difficulty.Description,
 		&difficulty.IsActive, &difficulty.CreatedAt, &difficulty.UpdatedAt)
-	if rowErr != nil { return database.Difficulty{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Difficulty{}, NotFoundError{
+				Query: "DIFFICULTY_BY_ID", Field: "id", Value: id }
+		}
+		return database.Difficulty{}, FillColumnsError{ Err: rowErr }
+	}
 	return difficulty, nil
 }
 
@@ -40,6 +46,12 @@ func GetDifficultyByName(db *sql.DB, name string) (database.Difficulty, error) {
 	rowErr := row.Scan(
 		&difficulty.ID, &difficulty.Name, &difficulty.Description,
 		&difficulty.IsActive, &difficulty.CreatedAt, &difficulty.UpdatedAt)
-	if rowErr != nil { return database.Difficulty{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Difficulty{}, NotFoundError{
+				Query: "DIFFICULTY_BY_NAME", Field: "name", Value: name }
+		}
+		return database.Difficulty{}, FillColumnsError{ Err: rowErr }
+	}
 	return difficulty, nil
 }

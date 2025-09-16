@@ -30,7 +30,13 @@ func GetCategoryById(db *sql.DB, id int64) (database.Category, error) {
 	rowErr := row.Scan(
 		&category.ID, &category.Name, &category.Description,
 		&category.IsActive, &category.CreatedAt, &category.UpdatedAt)
-	if rowErr != nil { return database.Category{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Category{}, NotFoundError{
+				Query: "CATEGORY_BY_ID", Field: "id", Value: id } 
+		}
+		return database.Category{}, FillColumnsError{ Err: rowErr }
+	}
 	return category, nil
 }
 
@@ -40,6 +46,12 @@ func GetCategoryByName(db *sql.DB, name string) (database.Category, error) {
 	rowErr := row.Scan(
 		&category.ID, &category.Name, &category.Description,
 		&category.IsActive, &category.CreatedAt, &category.UpdatedAt)
-	if rowErr != nil { return database.Category{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Category{}, NotFoundError{
+				Query: "CATEGORY_BY_NAME", Field: "name", Value: name }
+		}
+		return database.Category{}, FillColumnsError{ Err: rowErr }
+	}
 	return category, nil
 }

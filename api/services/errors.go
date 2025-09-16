@@ -34,3 +34,12 @@ type UpdateRegisterError struct {
 func (e UpdateRegisterError) Error() string {
 	return fmt.Sprintf("failed to update register using %s query:\n%v", e.Query, e.Err)
 }
+
+type NotFoundError struct {
+	Query string
+	Field string
+	Value any
+}
+func (e NotFoundError) Error() string {
+	return fmt.Sprintf("no rows found using %s query and %s = %v", e.Query, e.Field, e.Value)
+}

@@ -30,7 +30,13 @@ func GetResourceTypeById(db *sql.DB, id int64) (database.ResourceType, error) {
 	rowErr := row.Scan(
 		&resourceType.ID, &resourceType.Name, &resourceType.Description,
 		&resourceType.CreatedAt, &resourceType.UpdatedAt)
-	if rowErr != nil { return database.ResourceType{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.ResourceType{}, NotFoundError{
+				Query: "RESOURCE_TYPE_BY_ID", Field: "id", Value: id }
+		}
+		return database.ResourceType{}, FillColumnsError{ Err: rowErr }
+	}
 	return resourceType, nil
 }
 
@@ -40,6 +46,12 @@ func GetResourceTypeByName(db *sql.DB, name string) (database.ResourceType, erro
 	rowErr := row.Scan(
 		&resourceType.ID, &resourceType.Name, &resourceType.Description,
 		&resourceType.CreatedAt, &resourceType.UpdatedAt)
-	if rowErr != nil { return database.ResourceType{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.ResourceType{}, NotFoundError{
+				Query: "RESOURCE_TYPE_BY_NAME", Field: "name", Value: name }
+		}
+		return database.ResourceType{}, FillColumnsError{ Err: rowErr }
+	}
 	return resourceType, nil
 }

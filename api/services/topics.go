@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"database/sql"
 	"github.com/leojimenezg/rtapi/api/database"
 )
@@ -30,7 +31,13 @@ func GetTopicById(db *sql.DB, id int64) (database.Topic, error) {
 	rowErr := row.Scan(
 		&topic.ID, &topic.Name, &topic.Description, &topic.Count, &topic.CategoryID,
 		&topic.DifficultyID, &topic.IsActive, &topic.CreatedAt, &topic.UpdatedAt)
-	if rowErr != nil { return database.Topic{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Topic{}, NotFoundError{
+				Query: "TOPIC_BY_ID", Field: "id", Value: id }
+		}
+		return database.Topic{}, FillColumnsError{ Err: rowErr }
+	}
 	return topic, nil
 }
 
@@ -40,7 +47,13 @@ func GetTopicByName(db *sql.DB, name string) (database.Topic, error) {
 	rowErr := row.Scan(
 		&topic.ID, &topic.Name, &topic.Description, &topic.Count, &topic.CategoryID,
 		&topic.DifficultyID, &topic.IsActive, &topic.CreatedAt, &topic.UpdatedAt)
-	if rowErr != nil { return database.Topic{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Topic{}, NotFoundError{
+				Query: "TOPIC_BY_NAME", Field: "name", Value: name }
+		}
+		return database.Topic{}, FillColumnsError{ Err: rowErr }
+	}
 	return topic, nil
 }
 
@@ -81,7 +94,13 @@ func GetTopicWithDetailsById(db *sql.DB, id int64) (database.TopicWithDetails, e
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
 		&topicWithDetails.CategoryName, &topicWithDetails.CategoryDesc,
 		&topicWithDetails.DifficultyName, &topicWithDetails.DifficultyDesc)
-	if rowErr != nil { return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.TopicWithDetails{}, NotFoundError{
+				Query: "TOPIC_WITH_DETAILS_BY_ID", Field: "id", Value: id }
+		}
+		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return topicWithDetails, nil
 }
 
@@ -92,7 +111,13 @@ func GetTopicsWithDetailsByName(db *sql.DB, name string) (database.TopicWithDeta
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
 		&topicWithDetails.CategoryName, &topicWithDetails.CategoryDesc,
 		&topicWithDetails.DifficultyName, &topicWithDetails.DifficultyDesc)
-	if rowErr != nil { return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.TopicWithDetails{}, NotFoundError{
+				Query: "TOPIC_WITH_DETAILS_BY_NAME", Field: "name", Value: name }
+		}
+		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return topicWithDetails, nil
 }
 
@@ -103,7 +128,9 @@ func GetRandomTopicWithDetails(db *sql.DB) (database.TopicWithDetails, error) {
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
 		&topicWithDetails.CategoryName, &topicWithDetails.CategoryDesc,
 		&topicWithDetails.DifficultyName, &topicWithDetails.DifficultyDesc)
-	if rowErr != nil { return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil && rowErr != sql.ErrNoRows {
+		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return topicWithDetails, nil
 }
 
@@ -115,7 +142,13 @@ func GetRandomTopicWithDetailsByCategory(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
 		&topicWithDetails.CategoryName, &topicWithDetails.CategoryDesc,
 		&topicWithDetails.DifficultyName, &topicWithDetails.DifficultyDesc)
-	if rowErr != nil { return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.TopicWithDetails{}, NotFoundError{
+				Query: "RANDOM_TOPIC_BY_CATEGORY", Field: "category_id", Value: categoryID }
+		}
+		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return topicWithDetails, nil
 }
 
@@ -127,7 +160,13 @@ func GetRandomTopicWithDetailsByDifficulty(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
 		&topicWithDetails.CategoryName, &topicWithDetails.CategoryDesc,
 		&topicWithDetails.DifficultyName, &topicWithDetails.DifficultyDesc)
-	if rowErr != nil { return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.TopicWithDetails{}, NotFoundError{
+				Query: "RANDOM_TOPIC_BY_DIFFICULTY", Field: "difficulty_id", Value: difficultyID }
+		}
+		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return topicWithDetails, nil
 }
 
@@ -139,6 +178,14 @@ func GetRandomTopicWithDetailsByCategoryAndDifficulty(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
 		&topicWithDetails.CategoryName, &topicWithDetails.CategoryDesc,
 		&topicWithDetails.DifficultyName, &topicWithDetails.DifficultyDesc)
-	if rowErr != nil { return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.TopicWithDetails{}, NotFoundError{
+				Query: "RANDOM_TOPIC_BY_CATEGORY_AND_DIFFICULTY",
+				Field: "category_id, difficulty_id",
+				Value: fmt.Sprintf("%d, %d", categoryID, difficultyID) }
+		}
+		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return topicWithDetails, nil
 }

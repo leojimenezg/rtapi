@@ -30,7 +30,13 @@ func GetResourceById(db *sql.DB, id int64) (database.Resource, error) {
 	rowErr := row.Scan(
 		&resource.ID, &resource.Link, &resource.TypeID, &resource.TopicID,
 		&resource.IsValid, &resource.CreatedAt, &resource.UpdatedAt)
-	if rowErr != nil { return database.Resource{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Resource{}, NotFoundError{
+				Query: "RESOURCE_BY_ID", Field: "id", Value: id }
+		}
+		return database.Resource{}, FillColumnsError{ Err: rowErr }
+	}
 	return resource, nil
 }
 
@@ -61,7 +67,13 @@ func GetResourceWithDetailsById(db *sql.DB, id int64) (database.ResourceWithDeta
 	rowErr := row.Scan(
 		&resourceWithDetails.ResourceID, &resourceWithDetails.ResourceLink,
 		&resourceWithDetails.TypeName, &resourceWithDetails.TopicName)
-	if rowErr != nil { return database.ResourceWithDetails{}, FillColumnsError{ Err: rowErr } }
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.ResourceWithDetails{}, NotFoundError{
+				Query: "RESOURCE_WITH_DETAILS_BY_ID", Field: "id", Value: id }
+		}
+		return database.ResourceWithDetails{}, FillColumnsError{ Err: rowErr }
+	}
 	return resourceWithDetails, nil
 }
 
@@ -79,8 +91,11 @@ func GetResourcesWithDetailsByTopic(
 		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr } }
 		resourcesByTopic = append(resourcesByTopic, resourceByTopic)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, RowsIterationError{ Query: "RESOURCES_BY_TOPIC", Err: err }
+	err := rows.Err()
+	if err != nil { return nil, RowsIterationError{ Query: "RESOURCES_BY_TOPIC", Err: err } }
+	if len(resourcesByTopic) == 0 {
+		return nil, NotFoundError{
+			Query: "RESOURCES_BY_TOPIC", Field: "topic_id", Value: topicID }
 	}
 	return resourcesByTopic, nil
 }
