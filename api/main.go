@@ -2,37 +2,19 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/leojimenezg/rtapi/api/database"
-	"github.com/leojimenezg/rtapi/api/services"
+	"github.com/leojimenezg/rtapi/api/handlers"
 )
 
 func main() {
 	db, dbErr := database.ConnectToMySQLDB()
 	if dbErr != nil { panic(dbErr) }
+	fmt.Println("Connected to Database!")
 	defer db.Close()
-	
-	// Test Category
-	category, err := services.GetCategoryById(db, 1)
-	if err != nil { panic(err) }
-	fmt.Println("Category:", category)
-	
-	// Test Difficulty
-	difficulty, err := services.GetDifficultyById(db, 1)
-	if err != nil { panic(err) }
-	fmt.Println("Difficulty:", difficulty)
-	
-	// Test ResourceType
-	resourceType, err := services.GetResourceTypeById(db, 1)
-	if err != nil { panic(err) }
-	fmt.Println("ResourceType:", resourceType)
-	
-	// Test Resource
-	resource, err := services.GetResourceById(db, 1)
-	if err != nil { panic(err) }
-	fmt.Println("Resource:", resource)
-	
-	// Test Topic
-	topic, err := services.GetTopicById(db, 1)
-	if err != nil { panic(err) }
-	fmt.Println("Topic:", topic)
+	handler := handlers.New(db)
+	router := gin.Default()
+	router.GET("/topics", handler.GetAllTopics)
+	router.GET("/topics/details", handler.GetAllTopicsWithDetails)
+	router.Run()
 }
