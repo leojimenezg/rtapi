@@ -40,6 +40,56 @@ func GetResourceById(db *sql.DB, id int64) (database.Resource, error) {
 	return resource, nil
 }
 
+func GetResourcesByType(db *sql.DB, typeID int64) ([]database.Resource, error) {
+	rows, rowsErr := db.Query(database.RESOURCES_BY_TYPE, typeID)
+	if rowsErr != nil {
+		return nil, BadQueryError{ Query: "RESOURCES_BY_TYPE", Err: rowsErr }
+	}
+	defer rows.Close()
+	var resourcesByType []database.Resource
+	for rows.Next() {
+		var resource database.Resource
+		rowErr := rows.Scan(
+			&resource.ID, &resource.Link, &resource.TypeID, &resource.TopicID,
+			&resource.IsValid, &resource.CreatedAt, &resource.UpdatedAt)
+		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr} }
+		resourcesByType = append(resourcesByType, resource)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, RowsIterationError{ Query: "RESOURCES_BY_TYPE", Err: err }
+	}
+	if len(resourcesByType) == 0 {
+		return nil, NotFoundError{
+			Query: "RESOURCES_BY_TYPE", Field: "type_id", Value: typeID }
+	}
+	return resourcesByType, nil
+}
+
+func GetResourcesByTopic(db *sql.DB, topicID int64) ([]database.Resource, error) {
+	rows, rowsErr := db.Query(database.RESOURCES_BY_TOPIC, topicID)
+	if rowsErr != nil {
+		return nil, BadQueryError{ Query: "RESOURCES_BY_TOPIC", Err: rowsErr }
+	}
+	defer rows.Close()
+	var resourcesByTopic []database.Resource
+	for rows.Next() {
+		var resource database.Resource
+		rowErr := rows.Scan(
+			&resource.ID, &resource.Link, &resource.TypeID, &resource.TopicID,
+			&resource.IsValid, &resource.CreatedAt, &resource.UpdatedAt)
+		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr} }
+		resourcesByTopic = append(resourcesByTopic, resource)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, RowsIterationError{ Query: "RESOURCES_BY_TOPIC", Err: err }
+	}
+	if len(resourcesByTopic) == 0 {
+		return nil, NotFoundError{
+			Query: "RESOURCES_BY_TOPIC", Field: "topic_id", Value: topicID }
+	}
+	return resourcesByTopic, nil
+}
+
 func GetAllResourcesWithDetails(db *sql.DB) ([]database.ResourceWithDetails, error) {
 	rows, rowsErr := db.Query(database.ALL_RESOURCES_WITH_DETAILS)
 	if rowsErr != nil {
@@ -77,10 +127,33 @@ func GetResourceWithDetailsById(db *sql.DB, id int64) (database.ResourceWithDeta
 	return resourceWithDetails, nil
 }
 
+func GetResourcesWithDetailsByType(
+	db *sql.DB, typeID int64) ([]database.ResourceWithDetails, error) {
+	rows, rowsErr := db.Query(database.RESOURCES_WITH_DETAILS_BY_TYPE, typeID)
+	if rowsErr != nil { return nil, BadQueryError{ Query: "RESOURCES_WITH_DETAILS_BY_TYPE", Err: rowsErr } }
+	defer rows.Close()
+	var resourcesByType []database.ResourceWithDetails
+	for rows.Next() {
+		var resourceByType database.ResourceWithDetails
+		rowErr := rows.Scan(
+			&resourceByType.ResourceID, &resourceByType.ResourceLink,
+			&resourceByType.TypeName, &resourceByType.TopicName)
+		if rowErr != nil { return nil, FillColumnsError{ Err: rowErr } }
+		resourcesByType = append(resourcesByType, resourceByType)
+	}
+	err := rows.Err()
+	if err != nil { return nil, RowsIterationError{ Query: "RESOURCES_WITH_DETAILS_BY_TYPE", Err: err } }
+	if len(resourcesByType) == 0 {
+		return nil, NotFoundError{
+			Query: "RESOURCES_WITH_DETAILS_BY_TYPE", Field: "type_id", Value: typeID }
+	}
+	return resourcesByType, nil
+}
+
 func GetResourcesWithDetailsByTopic(
 	db *sql.DB, topicID int64) ([]database.ResourceWithDetails, error) {
-	rows, rowsErr := db.Query(database.RESOURCES_BY_TOPIC, topicID)
-	if rowsErr != nil { return nil, BadQueryError{ Query: "RESOURCES_BY_TOPIC", Err: rowsErr } }
+	rows, rowsErr := db.Query(database.RESOURCES_WITH_DETAILS_BY_TOPIC, topicID)
+	if rowsErr != nil { return nil, BadQueryError{ Query: "RESOURCES_WITH_DETAILS_BY_TOPIC", Err: rowsErr } }
 	defer rows.Close()
 	var resourcesByTopic []database.ResourceWithDetails
 	for rows.Next() {
@@ -92,10 +165,10 @@ func GetResourcesWithDetailsByTopic(
 		resourcesByTopic = append(resourcesByTopic, resourceByTopic)
 	}
 	err := rows.Err()
-	if err != nil { return nil, RowsIterationError{ Query: "RESOURCES_BY_TOPIC", Err: err } }
+	if err != nil { return nil, RowsIterationError{ Query: "RESOURCES_WITH_DETAILS_BY_TOPIC", Err: err } }
 	if len(resourcesByTopic) == 0 {
 		return nil, NotFoundError{
-			Query: "RESOURCES_BY_TOPIC", Field: "topic_id", Value: topicID }
+			Query: "RESOURCES_WITH_DETAILS_BY_TOPIC", Field: "topic_id", Value: topicID }
 	}
 	return resourcesByTopic, nil
 }

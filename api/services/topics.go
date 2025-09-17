@@ -57,6 +57,70 @@ func GetTopicByName(db *sql.DB, name string) (database.Topic, error) {
 	return topic, nil
 }
 
+func GetRandomTopic(db *sql.DB) (database.Topic, error) {
+	row := db.QueryRow(database.RANDOM_TOPIC)
+	var topic database.Topic
+	rowErr := row.Scan(
+		&topic.ID, &topic.Name, &topic.Description, &topic.Count, &topic.CategoryID,
+		&topic.DifficultyID, &topic.IsActive, &topic.CreatedAt, &topic.UpdatedAt)
+	if rowErr != nil && rowErr != sql.ErrNoRows {
+		return database.Topic{}, FillColumnsError{ Err: rowErr }
+	}
+	return topic, nil
+}
+
+func GetRandomTopicByCategory(db *sql.DB, categoryID int64) (database.Topic, error) {
+	row := db.QueryRow(database.RANDOM_TOPIC_BY_CATEGORY, categoryID)
+	var topic database.Topic
+	rowErr := row.Scan(
+		&topic.ID, &topic.Name, &topic.Description, &topic.Count, &topic.CategoryID,
+		&topic.DifficultyID, &topic.IsActive, &topic.CreatedAt, &topic.UpdatedAt)
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Topic{}, NotFoundError{
+				Query: "RANDOM_TOPIC_BY_CATEGORY", Field: "category_id", Value: categoryID }
+		}
+		return database.Topic{}, FillColumnsError{ Err: rowErr }
+	}
+	return topic, nil
+}
+
+func GetRandomTopicByDifficulty(db *sql.DB, difficultyID int64) (database.Topic, error) {
+	row := db.QueryRow(database.RANDOM_TOPIC_BY_DIFFICULTY, difficultyID)
+	var topic database.Topic
+	rowErr := row.Scan(
+		&topic.ID, &topic.Name, &topic.Description, &topic.Count, &topic.CategoryID,
+		&topic.DifficultyID, &topic.IsActive, &topic.CreatedAt, &topic.UpdatedAt)
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Topic{}, NotFoundError{
+				Query: "RANDOM_TOPIC_BY_DIFFICULTY", Field: "difficulty_id", Value: difficultyID }
+		}
+		return database.Topic{}, FillColumnsError{ Err: rowErr }
+	}
+	return topic, nil
+}
+
+func GetRandomTopicByCategoryAndDifficulty(
+	db *sql.DB, categoryID, difficultyID int64) (database.Topic, error) {
+	row := db.QueryRow(
+		database.RANDOM_TOPIC_BY_CATEGORY_AND_DIFFICULTY, categoryID, difficultyID)
+	var topic database.Topic
+	rowErr := row.Scan(
+		&topic.ID, &topic.Name, &topic.Description, &topic.Count, &topic.CategoryID,
+		&topic.DifficultyID, &topic.IsActive, &topic.CreatedAt, &topic.UpdatedAt)
+	if rowErr != nil {
+		if rowErr == sql.ErrNoRows {
+			return database.Topic{}, NotFoundError{
+				Query: "RANDOM_TOPIC_BY_CATEGORY_AND_DIFFICULTY",
+				Field: "category_id, difficulty_id",
+				Value: fmt.Sprintf("%d, %d", categoryID, difficultyID) }
+		}
+		return database.Topic{}, FillColumnsError{ Err: rowErr }
+	}
+	return topic, nil
+}
+
 func UpdateTopicCount(db *sql.DB, id int64) error {
 	_, updateErr := db.Exec(database.INCREMENT_TOPIC_COUNT, id)
 	if updateErr != nil {
@@ -122,7 +186,7 @@ func GetTopicsWithDetailsByName(db *sql.DB, name string) (database.TopicWithDeta
 }
 
 func GetRandomTopicWithDetails(db *sql.DB) (database.TopicWithDetails, error) {
-	row := db.QueryRow(database.RANDOM_TOPIC)
+	row := db.QueryRow(database.RANDOM_TOPIC_WITH_DETAILS)
 	var topicWithDetails database.TopicWithDetails
 	rowErr := row.Scan(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
@@ -136,7 +200,7 @@ func GetRandomTopicWithDetails(db *sql.DB) (database.TopicWithDetails, error) {
 
 func GetRandomTopicWithDetailsByCategory(
 	db *sql.DB, categoryID int64) (database.TopicWithDetails, error) {
-	row := db.QueryRow(database.RANDOM_TOPIC_BY_CATEGORY, categoryID)
+	row := db.QueryRow(database.RANDOM_TOPIC_WITH_DETAILS_BY_CATEGORY, categoryID)
 	var topicWithDetails database.TopicWithDetails
 	rowErr := row.Scan(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
@@ -145,7 +209,8 @@ func GetRandomTopicWithDetailsByCategory(
 	if rowErr != nil {
 		if rowErr == sql.ErrNoRows {
 			return database.TopicWithDetails{}, NotFoundError{
-				Query: "RANDOM_TOPIC_BY_CATEGORY", Field: "category_id", Value: categoryID }
+				Query: "RANDOM_TOPIC_WITH_DETAILS_BY_CATEGORY",
+				Field: "category_id", Value: categoryID }
 		}
 		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
 	}
@@ -154,7 +219,7 @@ func GetRandomTopicWithDetailsByCategory(
 
 func GetRandomTopicWithDetailsByDifficulty(
 	db *sql.DB, difficultyID int64) (database.TopicWithDetails, error) {
-	row := db.QueryRow(database.RANDOM_TOPIC_BY_DIFFICULTY, difficultyID)
+	row := db.QueryRow(database.RANDOM_TOPIC_WITH_DETAILS_BY_DIFFICULTY, difficultyID)
 	var topicWithDetails database.TopicWithDetails
 	rowErr := row.Scan(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
@@ -163,7 +228,8 @@ func GetRandomTopicWithDetailsByDifficulty(
 	if rowErr != nil {
 		if rowErr == sql.ErrNoRows {
 			return database.TopicWithDetails{}, NotFoundError{
-				Query: "RANDOM_TOPIC_BY_DIFFICULTY", Field: "difficulty_id", Value: difficultyID }
+				Query: "RANDOM_TOPIC_WITH_DETAILS_BY_DIFFICULTY",
+				Field: "difficulty_id", Value: difficultyID }
 		}
 		return database.TopicWithDetails{}, FillColumnsError{ Err: rowErr }
 	}
@@ -172,7 +238,8 @@ func GetRandomTopicWithDetailsByDifficulty(
 
 func GetRandomTopicWithDetailsByCategoryAndDifficulty(
 	db *sql.DB, categoryID, difficultyID int64) (database.TopicWithDetails, error) {
-	row := db.QueryRow(database.RANDOM_TOPIC_BY_CATEGORY_AND_DIFFICULTY, categoryID, difficultyID)
+	row := db.QueryRow(
+		database.RANDOM_TOPIC_WITH_DETAILS_BY_CATEGORY_AND_DIFFICULTY, categoryID, difficultyID)
 	var topicWithDetails database.TopicWithDetails
 	rowErr := row.Scan(
 		&topicWithDetails.TopicID, &topicWithDetails.TopicName, &topicWithDetails.TopicDesc,
@@ -181,7 +248,7 @@ func GetRandomTopicWithDetailsByCategoryAndDifficulty(
 	if rowErr != nil {
 		if rowErr == sql.ErrNoRows {
 			return database.TopicWithDetails{}, NotFoundError{
-				Query: "RANDOM_TOPIC_BY_CATEGORY_AND_DIFFICULTY",
+				Query: "RANDOM_TOPIC_WITH_DETAILS_BY_CATEGORY_AND_DIFFICULTY",
 				Field: "category_id, difficulty_id",
 				Value: fmt.Sprintf("%d, %d", categoryID, difficultyID) }
 		}
