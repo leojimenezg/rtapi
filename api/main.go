@@ -31,6 +31,16 @@ func main() {
 	router.GET("/resource_types/:id", handler.GetResourceTypeById)
 	router.GET("/resource_types/name/:name", handler.GetResourceTypeByName)
 
+	// Resources endpoints  
+	router.GET("/resources", handler.GetAllResources)
+	router.GET("/resources/:id", handler.GetResourceById)
+	router.GET("/resources/type/:id", handler.GetResourcesByType)
+	router.GET("/resources/topic/:id", handler.GetResourcesByTopic)
+	router.GET("/resources/details", handler.GetAllResourcesWithDetails)
+	router.GET("/resources/details/:id", handler.GetResourceWithDetailsById)
+	router.GET("/resources/details/type/:id", handler.GetResourcesWithDetailsByType)
+	router.GET("/resources/details/topic/:id", handler.GetResourcesWithDetailsByTopic)
+
 	// Topics endpoints
 	router.GET("/topics", handler.GetAllTopics)
 	router.GET("/topics/:id", handler.GetTopicById)
@@ -40,6 +50,7 @@ func main() {
 	router.GET("/topics/details/name/:name", handler.GetTopicWithDetailsByName)
 
 	// Random topic using query params
+	router.GET("/topics/random", handler.GetRandomTopic)
 	router.GET("/topics/details/random", handler.GetRandomTopicWithDetails)
 
 	router.Run()
