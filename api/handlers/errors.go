@@ -18,8 +18,8 @@ const (
 	
 	// Random topic errors
 	NO_TOPICS_AVAILABLE = "no topics available"
-	NO_TOPICS_FOR_CATEGORY = "no topics found for category %s"
-	NO_TOPICS_FOR_DIFFICULTY = "no topics found for difficulty %s"
+	NO_TOPICS_FOR_CATEGORY = "no topics found for category id %s"
+	NO_TOPICS_FOR_DIFFICULTY = "no topics found for difficulty id %s"
 	NO_TOPICS_FOR_FILTERS = "no topics found for the specified filters"
 	
 	// Resource errors
