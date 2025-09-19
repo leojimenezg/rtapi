@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"database/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/leojimenezg/rtapi/api/services"
 )
@@ -67,6 +68,9 @@ func (h *Handler) GetRandomTopic(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.ID)
 		c.JSON(http.StatusOK, randomTopic)
 	} else if categoryIdOk && !difficultyIdOk {
 		categoryId, idErr := strconv.ParseInt(categoryIdString, 10, 64)
@@ -86,6 +90,9 @@ func (h *Handler) GetRandomTopic(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.ID)
 		c.JSON(http.StatusOK, randomTopic)
 	} else if difficultyIdOk && !categoryIdOk {
 		difficultyId, idErr := strconv.ParseInt(difficultyIdString, 10, 64)
@@ -105,6 +112,9 @@ func (h *Handler) GetRandomTopic(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.ID)
 		c.JSON(http.StatusOK, randomTopic)
 	} else {
 		categoryId, categoryIdErr := strconv.ParseInt(categoryIdString, 10, 64)
@@ -129,6 +139,9 @@ func (h *Handler) GetRandomTopic(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.ID)
 		c.JSON(http.StatusOK, randomTopic)
 	}
 }
@@ -192,6 +205,9 @@ func (h *Handler) GetRandomTopicWithDetails(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.TopicID)
 		c.JSON(http.StatusOK, randomTopic)
 	} else if categoryIdOk && !difficultyIdOk {
 		categoryId, idErr := strconv.ParseInt(categoryIdString, 10, 64)
@@ -211,6 +227,9 @@ func (h *Handler) GetRandomTopicWithDetails(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.TopicID)
 		c.JSON(http.StatusOK, randomTopic)
 	} else if difficultyIdOk && !categoryIdOk {
 		difficultyId, idErr := strconv.ParseInt(difficultyIdString, 10, 64)
@@ -230,6 +249,9 @@ func (h *Handler) GetRandomTopicWithDetails(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.TopicID)
 		c.JSON(http.StatusOK, randomTopic)
 	} else {
 		categoryId, categoryIdErr := strconv.ParseInt(categoryIdString, 10, 64)
@@ -255,6 +277,9 @@ func (h *Handler) GetRandomTopicWithDetails(c *gin.Context) {
 				"error": fmt.Sprintf(FETCH_ONE_ERROR, "topic") })
 			return
 		}
+		go func(db *sql.DB, id int64) {
+			services.UpdateTopicCount(db, id)
+		}(h.db, randomTopic.TopicID)
 		c.JSON(http.StatusOK, randomTopic)
 	}
 }
