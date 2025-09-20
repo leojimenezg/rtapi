@@ -181,7 +181,7 @@ func (h *Handler) GetTopicWithDetailsById(c *gin.Context) {
 
 func (h *Handler) GetTopicWithDetailsByName(c *gin.Context) {
 	name := c.Param("name")
-	topicWithDetails, topicErr := services.GetTopicsWithDetailsByName(h.db, name)
+	topicWithDetails, topicErr := services.GetTopicWithDetailsByName(h.db, name)
 	if topicErr != nil {
 		if _, ok := topicErr.(services.NotFoundError); ok {
 			c.JSON(http.StatusNotFound, gin.H{

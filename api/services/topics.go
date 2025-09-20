@@ -168,7 +168,7 @@ func GetTopicWithDetailsById(db *sql.DB, id int64) (database.TopicWithDetails, e
 	return topicWithDetails, nil
 }
 
-func GetTopicsWithDetailsByName(db *sql.DB, name string) (database.TopicWithDetails, error) {
+func GetTopicWithDetailsByName(db *sql.DB, name string) (database.TopicWithDetails, error) {
 	row := db.QueryRow(database.TOPIC_WITH_DETAILS_BY_NAME, name)
 	var topicWithDetails database.TopicWithDetails
 	rowErr := row.Scan(
